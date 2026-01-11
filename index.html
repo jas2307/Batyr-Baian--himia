@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Батыр Баян: Тұңғиқ Талдау</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
+
+        :root {
+            --neon-gold: #fbbf24;
+            --neon-blue: #06b6d4;
+            --neon-purple: #a855f7;
+            --blood-red: #ef4444;
+            --bg-dark: #020617;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .poetical-font { font-family: 'Playfair Display', serif; }
+        
+        /* Зертханалық эффектілер */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .reagent-btn {
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reagent-btn:hover {
+            transform: translateY(-3px);
+            border-color: var(--neon-gold);
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .reagent-btn.active {
+            border-color: var(--neon-gold);
+            background: rgba(251, 191, 36, 0.2);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .reagent-btn.linked {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Колбадағы сұйықтық анимациясы */
+        .liquid-wave {
+            animation: wave 3s infinite ease-in-out;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            50% { transform: translateY(-5px) scaleY(1.02); }
+        }
+
+        .scroll-custom::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scroll-custom::-webkit-scrollbar-thumb {
+            background: var(--neon-gold);
+            border-radius: 10px;
+        }
+
+        .quote-gradient {
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="loader" class="fixed inset-0 z-[2000] bg-black flex flex-col items-center justify-center text-center">
+        <div class="w-64 h-1 bg-gray-800 mb-4 overflow-hidden">
+            <div id="load-bar" class="h-full bg-amber-400 w-0 transition-all duration-1000"></div>
+        </div>
+        <div class="gold-text text-sm tracking-[0.3em] animate-pulse">М. ЖҰМАБАЕВ: БАТЫР БАЯН — ЖҮКТЕЛУДЕ...</div>
+    </div>
+
+    <!-- Негізгі Контейнер -->
+    <div class="h-full grid grid-cols-12 gap-6 relative">
+        
+        <!-- Сол жақ: Сюжеттік элементтер -->
+        <aside class="col-span-12 md:col-span-3 flex flex-col gap-4">
+            <div class="glass-panel p-4 rounded-xl">
+                <h2 class="text-amber-400 text-xs font-bold uppercase tracking-widest border-b border-amber-400/30 pb-2 mb-4">
+                    <i class="fa-solid fa-atom mr-2"></i> Сюжеттік Реактивтер
+                </h2>
+                <div id="elements-grid" class="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto scroll-custom pr-2">
+                    <!-- JS арқылы толтырылады -->
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-xl flex-1 flex flex-col justify-center text-center">
+                <div class="text-[10px] text-gray-500 uppercase">Зертхана Статусы</div>
+                <div id="lab-status" class="text-cyan-400 text-xs mt-1">ОПЕРАЦИЯҒА ДАЙЫН</div>
+            </div>
+        </aside>
+
+        <!-- Орта: Реактор -->
+        <main class="col-span-12 md:col-span-6 flex flex-col">
+            <div class="glass-panel flex-1 rounded-3xl relative flex flex-col items-center justify-center overflow-hidden">
+                <canvas id="connections-canvas" class="absolute inset-0 pointer-events-none"></canvas>
+                
+                <!-- Символикалық Колба -->
+                <div class="relative z-10 scale-110">
+                    <svg viewBox="0 0 200 240" class="w-56 h-72">
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Шыны -->
+                        <path d="M75,20 L75,80 L20,200 Q10,230 40,230 L160,230 Q190,230 180,200 L125,80 L125,20 Z" 
+                              fill="none" stroke="rgba(251, 191, 36, 0.4)" stroke-width="2" />
+                        <!-- Сұйықтық -->
+                        <path id="liquid" d="M30,180 L170,180 L180,200 Q190,230 160,230 L40,230 Q10,230 20,200 Z" 
+                              fill="url(#liquidGradient)" class="liquid-wave" filter="url(#glow)"/>
+                        
+                        <linearGradient id="liquidGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.8" id="grad-top"/>
+                            <stop offset="100%" stop-color="#78350f" stop-opacity="0.9" id="grad-bottom"/>
+                        </linearGradient>
+                    </svg>
+                    
+                    <!-- Бу мен Түтін -->
+                    <div id="steam" class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 pointer-events-none opacity-0 transition-opacity">
+                        <div class="absolute inset-0 bg-white/20 blur-xl animate-pulse"></div>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center px-6">
+                    <div id="active-pair-display" class="text-xs text-gray-400 tracking-widest uppercase mb-2">Екі элементті таңдаңыз</div>
+                    <button id="synthesize-btn" onclick="startSynthesis()" disabled
+                        class="px-10 py-3 rounded-full border border-gray-600 text-gray-500 uppercase text-sm font-bold tracking-widest hover:scale-105 transition-all">
+                        Синтезді бастау
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Оң жақ: Деректер мен Нәтиже -->
+        <section class="col-span-12 md:col-span-3 flex flex-col gap-6">
+            <div class="glass-panel p-5 rounded-xl flex-1 flex flex-col">
+                <h3 class="text-xs text-cyan-400 font-bold uppercase tracking-widest mb-4 border-b border-cyan-400/20 pb-2">Талдау нәтижесі</h3>
+                <div id="analysis-content" class="flex-1 flex flex-col justify-center items-center text-center">
+                    <div class="text-gray-600 italic text-sm">Зерттеуді бастау үшін элементтерді қосыңыз...</div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-xl h-48">
+                <h3 class="text-[10px] text-gray-500 uppercase mb-2">Тарихи Контекст</h3>
+                <p id="context-box" class="text-[11px] leading-relaxed text-gray-300 italic">
+                    Мағжан Жұмабаев поэмасы — қазақ рухының трагедиялық және ерлік шыңы.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Толық Экранды Нәтиже Модалі -->
+    <div id="result-modal" class="fixed inset-0 z-[3000] hidden flex items-center justify-center p-6 bg-slate-950/95 backdrop-blur-xl">
+        <div class="max-w-4xl w-full glass-panel rounded-3xl p-8 border-amber-400/40 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-times text-2xl"></i>
+            </button>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <div id="modal-tag" class="text-[10px] text-amber-400 font-bold tracking-widest uppercase mb-1">Байланыс түрі</div>
+                    <h2 id="modal-title" class="text-3xl font-bold text-white uppercase mb-6 poetical-font tracking-tight"></h2>
+                    <div class="space-y-4">
+                        <p id="modal-desc" class="text-gray-300 leading-relaxed text-lg"></p>
+                        <div class="p-4 bg-amber-400/5 rounded-lg border-l-4 border-amber-400 italic text-sm text-amber-100/80">
+                            <span class="text-[10px] block uppercase not-italic text-amber-400 mb-1">Сюжеттік маңызы:</span>
+                            <span id="modal-significance"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <div class="flex-1 quote-gradient p-6 flex flex-col justify-center relative">
+                        <i class="fa-solid fa-quote-left text-4xl text-amber-400/20 absolute top-4 left-4"></i>
+                        <p id="modal-quote" class="poetical-font italic text-xl leading-relaxed text-white text-center"></p>
+                        <i class="fa-solid fa-quote-right text-4xl text-amber-400/20 absolute bottom-4 right-4"></i>
+                    </div>
+                    <div class="mt-6 flex justify-between items-center text-[10px] font-mono text-gray-500">
+                        <span>СИНТЕЗ ID: #BAYAN-001</span>
+                        <span>ДЕРЕК: МАҒЖАН ЖҰМАБАЕВ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Поэманың толық мазмұндық базасы
+        const elements = [
+            { id: 'abylay', name: 'Абылай Хан', icon: 'fa-crown', color: '#fbbf24', cat: 'Тұлға' },
+            { id: 'bayan', name: 'Батыр Баян', icon: 'fa-shield-halved', color: '#f59e0b', cat: 'Тұлға' },
+            { id: 'noyan', name: 'Жас Ноян', icon: 'fa-user-ninja', color: '#a855f7', cat: 'Тұлға' },
+            { id: 'qalmaq', name: 'Қалмақ қызы', color: '#ec4899', icon: 'fa-venus', cat: 'Тұлға' },
+            { id: 'kanai', name: 'Қанай Би', color: '#06b6d4', icon: 'fa-feather', cat: 'Тұлға' },
+            { id: 'sarayqa', name: 'Мұңлы Арқа', color: '#71717a', icon: 'fa-mountain-sun', cat: 'Орта' },
+            { id: 'obagan', name: 'Обаған өзені', color: '#3b82f6', icon: 'fa-water', cat: 'Орта' },
+            { id: 'zhaul', name: 'Қалмақ елі', color: '#ef4444', icon: 'fa-skull-crossbones', cat: 'Орта' },
+            { id: 'namys', name: 'Намыс (От)', color: '#f97316', icon: 'fa-fire', cat: 'Ұғым' },
+            { id: 'asat', name: 'Сатқындық', color: '#6366f1', icon: 'fa-mask', cat: 'Ұғым' },
+            { id: 'mahabbat', name: 'Махаббат', color: '#f43f5e', icon: 'fa-heart', cat: 'Ұғым' },
+            { id: 'ajal', name: 'Ажал/Қаза', color: '#1e293b', icon: 'fa-ghost', cat: 'Ұғым' }
+        ];
+
+        const connections = {
+            'abylay+bayan': {
+                title: 'Мемлекет пен Семсер',
+                desc: 'Абылай Баянсыз жауға аттанбаған. Баян — ханның тірегі, оның "қандыбалақ" батыры.',
+                sign: 'Баянның кешігуі Абылайдың ішкі үрейін тудырады: "Аттанбайды хан Абылай, Келмесе батыр Баян!"',
+                quote: '«Талпынған тас түлектің бірі Баян, \nАбылай хан ордасын қылған баян.»'
+            },
+            'noyan+qalmaq': {
+                title: 'Трагедиялық Махаббат',
+                desc: 'Ноянның жау қызына деген сезімі оны сатқындыққа итермелейді. Бұл — таза жүректің қателігі.',
+                sign: 'Жеке бастың сезімі мен ұлттық мүдденің қақтығысы. Махаббаттың соңы опасыздыққа айналуы.',
+                quote: '«Сүйемін мен де сені, Тәңірі куә, \nТән түгіл, жаным саған берем!» - деді...»'
+            },
+            'bayan+noyan': {
+                title: 'Қатал Парыз',
+                desc: 'Баян өз бауырын Отанды сатқаны үшін өлтіреді. Бұл — поэманың ең ауыр психологиялық тұсы.',
+                sign: 'Баянның ішкі арпалысы: "Бауырыма тас жүрегім жібімеді-ау!". Отан намысы туыстықтан жоғары қойылады.',
+                quote: '«Бауырым! - деп Ноянға ұмтылмады, \nҚан толды, қайнап кетті жүрек қаны...»'
+            },
+            'bayan+qalmaq': {
+                title: 'Кек пен Қайғы',
+                desc: 'Баян бауырын азғырған қалмақ қызын да аямайды, бірақ кейін өкінішке батады.',
+                sign: 'Қыздың сұлулығы мен залымдығының (немесе еркіндікке ұмтылуының) Баян тарапынан жазалануы.',
+                quote: '«Қалмақтың атты батыр тағы қызын, \nОл-дағы залым Ноян көрген ізін...»'
+            },
+            'abylay+kanai': {
+                title: 'Хан мен Кеңес',
+                desc: 'Қанай би Абылайдың ақылын сабырға шақырушы. Хан ордасындағы дипломатиялық шешімдер.',
+                sign: 'Бидің ақылдылығы мен сабырлылығы ханның асығыстығын басады.',
+                quote: '«Би Қанай, арғын ата батыр Қанай, \nСөйледі ханға қарап сабырлы орай...»'
+            },
+            'sarayqa+bayan': {
+                title: 'Дала және Ерлік',
+                desc: 'Сарыарқаның табиғаты Баянның рухымен үндес. Арқа — ерліктің куәсі.',
+                sign: 'Мағжан Сарыарқаны "мұңлы" деп суреттейді, себебі ол Баяндай ерлерден айырылған.',
+                quote: '«Сарғайып, сағым мініп, Сарыарқа тұр, \nМұңайып, Баянды іздеп, жоқтап жатыр...»'
+            },
+            'bayan+obagan': {
+                title: 'Шешуші Шеп',
+                desc: 'Обаған бойындағы қуғын мен соңғы жазалау оқиғасы.',
+                sign: 'Географиялық атаудың тарихи-әдеби маңызы, оқиғаның шарықтау шегі өткен жер.',
+                quote: '«Обаған... Ол суды да батыр кешті, \nЖанында жалындаған қайғы өшті...»'
+            },
+            'bayan+zhaul': {
+                title: 'Соңғы Жарылыс',
+                desc: 'Баян інісін өлтірген соң, өлімге бас тігіп, жалғыз өзі қалмақтардың ішіне кіріп кетеді.',
+                sign: 'Жан дүниесі өртенген батырдың өлім арқылы тазаруы және өшпес ерлігі.',
+                quote: '«Қалмақты қасқыр тиген қойдай қылды, \nҚан ағып, тау боп өлік жерге толды...»'
+            },
+            'bayan+namys': {
+                title: 'Тұлғалық Энергия',
+                desc: 'Баянның бойындағы Алаш намысы оны басқалардан ерекшелейді.',
+                sign: 'Намыс — Баянның қозғаушы күші, оның қаны мен жаны.',
+                quote: '«Намыстың құлы болған ер Баяндай, \nАлаштың ардағы боп қалар мәңгі-ай...»'
+            },
+            'noyan+asat': {
+                title: 'Құлау Химиясы',
+                desc: 'Ноянның жастығы мен махаббатқа алдануы сатқындыққа әкелді.',
+                sign: 'Сатқындықтың психологиялық негіздемесі: жастық пен сезімнің жеңілуі.',
+                quote: '«Азғырып алған соң ба жаудың қызы, \nЖоқ болды Ноян байғұс — ердің ізі...»'
+            },
+            'bayan+ajal': {
+                title: 'Батырдың Соңы',
+                desc: 'Баянның қазасы — бүкіл Алаш үшін орны толмас трагедия.',
+                sign: 'Өлімнің ерлікпен аяқталуы, рухтың мәңгілікке көшуі.',
+                quote: '«Денесін Ақкелінге қойды жиып, \nАлаштың ардақтысын кетті қиып...»'
+            }
+        };
+
+        let selected = [];
+
+        function init() {
+            const grid = document.getElementById('elements-grid');
+            elements.forEach(el => {
+                const btn = document.createElement('button');
+                btn.className = `reagent-btn p-3 rounded-lg flex flex-col items-center justify-center gap-1`;
+                btn.dataset.id = el.id;
+                btn.onclick = () => toggleElement(el.id);
+                btn.innerHTML = `
+                    <i class="fa-solid ${el.icon} text-lg" style="color: ${el.color}"></i>
+                    <span class="text-[9px] uppercase font-bold text-gray-400">${el.name}</span>
+                `;
+                grid.appendChild(btn);
+            });
+
+            // Жүктелу экраны
+            setTimeout(() => {
+                document.getElementById('load-bar').style.width = '100%';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 1000);
+            }, 500);
+        }
+
+        function toggleElement(id) {
+            const btn = document.querySelector(`[data-id="${id}"]`);
+            
+            if (selected.includes(id)) {
+                selected = selected.filter(x => x !== id);
+                btn.classList.remove('active');
+            } else {
+                if (selected.length >= 2) {
+                    const prev = document.querySelector(`[data-id="${selected[0]}"]`);
+                    prev.classList.remove('active');
+                    selected.shift();
+                }
+                selected.push(id);
+                btn.classList.add('active');
+            }
+
+            updateInterface();
+        }
+
+        function updateInterface() {
+            const pairDisplay = document.getElementById('active-pair-display');
+            const synthBtn = document.getElementById('synthesize-btn');
+            const analysis = document.getElementById('analysis-content');
+            const status = document.getElementById('lab-status');
+
+            if (selected.length === 2) {
+                const el1 = elements.find(e => e.id === selected[0]);
+                const el2 = elements.find(e => e.id === selected[1]);
+                pairDisplay.innerHTML = `${el1.name} <i class="fa-solid fa-plus mx-2 text-amber-400"></i> ${el2.name}`;
+                
+                const hasConn = connections[`${selected[0]}+${selected[1]}`] || connections[`${selected[1]}+${selected[0]}`];
+                
+                if (hasConn) {
+                    synthBtn.disabled = false;
+                    synthBtn.className = "px-10 py-3 rounded-full border border-amber-400 text-amber-400 uppercase text-sm font-bold tracking-widest hover:bg-amber-400/10 transition-all cursor-pointer";
+                    status.innerText = "БАЙЛАНЫС ТАБЫЛДЫ";
+                    status.className = "text-green-400 text-xs mt-1";
+                } else {
+                    synthBtn.disabled = true;
+                    synthBtn.className = "px-10 py-3 rounded-full border border-red-500/50 text-red-500/50 uppercase text-sm font-bold tracking-widest cursor-not-allowed";
+                    status.innerText = "ТІКЕЛЕЙ БАЙЛАНЫС ЖОҚ";
+                    status.className = "text-red-400 text-xs mt-1";
+                }
+                
+                analysis.innerHTML = `
+                    <div class="animate-pulse text-amber-400/60">
+                        <i class="fa-solid fa-flask-vial text-4xl mb-4"></i>
+                        <p class="text-xs">Синтезді бастауға дайын...</p>
+                    </div>
+                `;
+            } else if (selected.length === 1) {
+                const el = elements.find(e => e.id === selected[0]);
+                pairDisplay.innerText = el.name + " ТАҢДАЛДЫ...";
+                synthBtn.disabled = true;
+                status.innerText = "ЕКІНШІ ЭЛЕМЕНТ КҮТІЛУДЕ";
+                
+                // Жақын байланыстарды жарықтандыру
+                highlightPotentialLinks(selected[0]);
+            } else {
+                pairDisplay.innerText = "ЕКІ ЭЛЕМЕНТТІ ТАҢДАҢЫЗ";
+                synthBtn.disabled = true;
+                status.innerText = "ОПЕРАЦИЯҒА ДАЙЫН";
+                clearHighlights();
+            }
+            
+            drawConnections();
+        }
+
+        function highlightPotentialLinks(id) {
+            elements.forEach(el => {
+                const btn = document.querySelector(`[data-id="${el.id}"]`);
+                const hasConn = connections[`${id}+${el.id}`] || connections[`${el.id}+${id}`];
+                if (hasConn) btn.classList.add('linked');
+                else btn.classList.remove('linked');
+            });
+        }
+
+        function clearHighlights() {
+            document.querySelectorAll('.reagent-btn').forEach(b => b.classList.remove('linked'));
+        }
+
+        function startSynthesis() {
+            const steam = document.getElementById('steam');
+            steam.classList.remove('opacity-0');
+            
+            // Сұйықтық түсін өзгерту
+            const gradTop = document.getElementById('grad-top');
+            gradTop.style.stopColor = "#06b6d4";
+            
+            setTimeout(() => {
+                const key = selected[0] + '+' + selected[1];
+                const keyAlt = selected[1] + '+' + selected[0];
+                const data = connections[key] || connections[keyAlt];
+                
+                showModal(data);
+                
+                // Қалпына келтіру
+                steam.classList.add('opacity-0');
+                gradTop.style.stopColor = "#fbbf24";
+            }, 1000);
+        }
+
+        function showModal(data) {
+            document.getElementById('modal-title').innerText = data.title;
+            document.getElementById('modal-desc').innerText = data.desc;
+            document.getElementById('modal-significance').innerText = data.sign;
+            document.getElementById('modal-quote').innerText = data.quote;
+            
+            const modal = document.getElementById('result-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            selected = [];
+            updateInterface();
+        }
+
+        function drawConnections() {
+            const canvas = document.getElementById('connections-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (selected.length < 2) return;
+
+            const b1 = document.querySelector(`[data-id="${selected[0]}"]`).getBoundingClientRect();
+            const b2 = document.querySelector(`[data-id="${selected[1]}"]`).getBoundingClientRect();
+            const cRect = canvas.getBoundingClientRect();
+
+            ctx.beginPath();
+            ctx.moveTo(b1.left - cRect.left + b1.width/2, b1.top - cRect.top + b1.height/2);
+            ctx.bezierCurveTo(
+                canvas.width/2, b1.top - cRect.top,
+                canvas.width/2, b2.top - cRect.top,
+                b2.left - cRect.left + b2.width/2, b2.top - cRect.top + b2.height/2
+            );
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+        }
+
+        window.onload = init;
+        window.onresize = drawConnections;
+    </script>
+</body>
+</html>
